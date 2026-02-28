@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Premium Shopping Cart</title>
+
+<style>
+
+body{
+  font-family: Arial, sans-serif;
+  padding:20px;
+  background:#f5f5f5;
+  transition:0.3s;
+}
+
+.dark{
+  background:#121212;
+  color:white;
+}
+
+h2,h3{
+  animation:fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(-10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+button{
+  padding:8px 14px;
+  border:none;
+  background:#007bff;
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  background:#0056b3;
+  transform:scale(1.05);
+}
+
+.product-container{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.product{
+  background:white;
+  padding:15px;
+  width:220px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  text-align:center;
+  transition:0.3s;
+}
+
+.product:hover{
+  transform:translateY(-5px);
+}
+
+.product img{
+  width:100%;
+  height:150px;
+  object-fit:cover;
+  border-radius:8px;
+}
+
+.summary{
+  background:white;
+  padding:15px;
+  width:320px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  margin-top:20px;
+}
+
+ul{
+  list-style:none;
+  padding:0;
+}
+
+li{
+  margin:8px 0;
+  animation:fadeIn 0.5s ease-in;
+}
+
+input{
+  padding:6px;
+  margin:5px 0;
+}
+
+.dark .product,
+.dark .summary{
+  background:#1e1e1e;
+  color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>🛒 Cart: <span id="count">0</span></h2>
+<button onclick="toggleDark()">Toggle Dark Mode</button>
+
+<h3>Products</h3>
+
+<div class="product-container">
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab">
+<h4>Shirt</h4>
+<p>₹500</p>
+<button class="add" data-name="Shirt" data-price="500">Add to Cart</button>
+</div>
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff">
+<h4>Shoes</h4>
+<p>₹1000</p>
+<button class="add" data-name="Shoes" data-price="1000">Add to Cart</button>
+</div>
+
+</div>
+
+<h3>Cart Items</h3>
+<ul id="cart"></ul>
+
+<div class="summary">
+<p>Subtotal: ₹<span id="subtotal">0</span></p>
+<p>Discount: ₹<span id="discount">0</span></p>
+<p>Shipping: ₹<span id="shipping">0</span></p>
+<h3>Total: ₹<span id="total">0</span></h3>
+</div>
+
+<h3>Apply Coupon</h3>
+<input type="text" id="coupon" placeholder="SAVE10 or FLAT100">
+<button onclick="applyCoupon()">Apply</button>
+<p id="couponMsg"></p>
+
+<button onclick="clearCart()">Clear Cart</button>
+<button onclick="checkout()">Checkout</button>
+
+<script>
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let discountValue = 0;
+
+let cartList = document.getElementById("cart");
+
+function showCart(){
+
+cartList.innerHTML = "";
+
+let subtotal = 0;
+let count = 0;
+
+cart.forEach((p,i)=>{
+
+subtotal += p.price * p.qty;
+count += p.qty;
+
+let li = document.createElement("li");
+
+li.innerHTML = `
+${p.name} ₹${p.price} x ${p.qty}
+<button onclick="increase(${i})">+</button>
+<button onclick="decrease(${i})">-</button>
+<button onclick="removeItem(${i})">X</button>
+`;
+
+cartList.appendChild(li);
+});
+
+// Shipping Fix
+let shipping = subtotal === 0 ? 0 : (subtotal > 2000 ? 0 : 50);
+let total = subtotal - discountValue + shipping;
+
+document.getElementById("subtotal").innerText = subtotal;
+document.getElementById("discount").innerText = discountValue;
+document.getElementById("shipping").innerText = shipping;
+document.getElementById("total").innerText = total;
+document.getElementById("count").innerText = count;
+
+localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+document.querySelectorAll(".add").forEach(btn=>{
+btn.addEventListener("click", function(){
+
+let name = btn.dataset.name;
+let price = Number(btn.dataset.price);
+
+let item = cart.find(p => p.name === name);
+
+if(item){
+item.qty++;
+}else{
+cart.push({name:name, price:price, qty:1});
+}
+
+showCart();
+});
+});
+
+function increase(i){
+cart[i].qty++;
+showCart();
+}
+
+function decrease(i){
+cart[i].qty--;
+if(cart[i].qty == 0){
+cart.splice(i,1);
+}
+showCart();
+}
+
+function removeItem(i){
+cart.splice(i,1);
+showCart();
+}
+
+function clearCart(){
+cart = [];
+discountValue = 0;
+showCart();
+}
+
+function applyCoupon(){
+
+let code = document.getElementById("coupon").value;
+code = code.toUpperCase().replace(" ","");
+
+let subtotal = cart.reduce((sum,p)=> sum + p.price*p.qty,0);
+
+if(code === "SAVE10"){
+discountValue = subtotal * 0.10;
+document.getElementById("couponMsg").innerText = "10% Discount Applied!";
+}
+else if(code === "FLAT100"){
+discountValue = 100;
+document.getElementById("couponMsg").innerText = "₹100 Discount Applied!";
+}
+else{
+discountValue = 0;
+document.getElementById("couponMsg").innerText = "Invalid Coupon!";
+}
+
+showCart();
+}
+
+function toggleDark(){
+document.body.classList.toggle("dark");
+}
+
+function checkout(){
+
+if(cart.length === 0){
+alert("Your cart is empty!");
+return;
+}
+
+let subtotal = cart.reduce((sum,p)=> sum + p.price*p.qty,0);
+let shipping = subtotal > 2000 ? 0 : 50;
+let total = subtotal - discountValue + shipping;
+
+let orderId = "ORD" + Math.floor(Math.random()*100000);
+let date = new Date().toLocaleString();
+
+let invoice = "------ INVOICE ------\n\n";
+invoice += "Order ID: " + orderId + "\n";
+invoice += "Date: " + date + "\n\n";
+invoice += "Items:\n";
+
+cart.forEach(p=>{
+invoice += p.name + " x " + p.qty + " = ₹" + (p.price*p.qty) + "\n";
+});
+
+invoice += "\nSubtotal: ₹" + subtotal;
+invoice += "\nDiscount: ₹" + discountValue;
+invoice += "\nShipping: ₹" + shipping;
+invoice += "\n-----------------------";
+invoice += "\nTotal Amount: ₹" + total;
+invoice += "\n\nThank You For Shopping!";
+
+alert(invoice);
+
+clearCart();
+}
+
+showCart();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login with Attempt Limit</title>
+</head>
+<body>
+
+<h2>Login</h2>
+
+<input type="text" id="email" placeholder="Enter Email"><br><br>
+<input type="password" id="password" placeholder="Enter Password"><br><br>
+<button onclick="login()" id="loginBtn">Login</button>
+
+<p id="message" style="color:red;"></p>
+
+<script>
+
+let attempts = 3;
+
+function login(){
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let message = document.getElementById("message");
+    let btn = document.getElementById("loginBtn");
+
+   if(email !== "" && email.includes("@") && email.includes(".") && email.indexOf("@") > 0 && email.indexOf(".") > email.indexOf("@")){
+        document.getElementById('emailError').innerHTML="Email field is required."
+        isValid = false;
+   }
+    else{
+        attempts--;
+        message.innerHTML = "Wrong credentials! Attempts left: " + attempts;
+
+        if(attempts === 0){
+            btn.disabled = true;
+            message.innerHTML = "Account Locked!";
+        }
+    }
+}
+
+</script>
+
+</body>
+</html>
