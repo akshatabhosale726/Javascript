@@ -19,7 +19,7 @@ function loginMessage(userName){
     return `${userName} just login!`;
 }
 
-console.log(loginMessage("Siddhi"));
+console.log(loginMessage("Akshata"));
 console.log(loginMessage()); // when your string is empty then it gives undefined
 
 function calculatePrice(...num1){
@@ -32,8 +32,8 @@ console.log(calculatePrice(100, 300, 400));
 
 //most IMP for interview
 const username = {
-    name : "Siddhi",
-    age : 20,
+    name : "Akshata",
+    age : 21,
     
 };
 
